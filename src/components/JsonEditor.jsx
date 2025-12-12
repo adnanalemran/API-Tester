@@ -1,8 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Wand2, Copy, Check } from 'lucide-react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 /**
  * JsonEditor component - JSON editor with formatting and syntax highlighting
@@ -11,40 +9,31 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
  * @param {Function} props.onChange - Callback when value changes
  * @param {string} props.placeholder - Placeholder text
  */
-export const JsonEditor = ({ value, onChange, placeholder = '{"key": "value"}' }) => {
-  const [isFormatted, setIsFormatted] = useState(false);
+export const JsonEditor = ({ value = '', onChange, placeholder = '{"key": "value"}' }) => {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const textareaRef = useRef(null);
-  const previewRef = useRef(null);
+  
+  const jsonValue = value || '';
 
   const formatJSON = () => {
     try {
-      if (!value || !value.trim()) {
+      if (!jsonValue || !jsonValue.trim()) {
         onChange('{}');
-        setIsFormatted(true);
         setError(null);
         return;
       }
-      const parsed = JSON.parse(value);
+      const parsed = JSON.parse(jsonValue);
       const formatted = JSON.stringify(parsed, null, 2);
       onChange(formatted);
-      setIsFormatted(true);
       setError(null);
-      setShowPreview(true);
     } catch (e) {
       setError('Invalid JSON');
-      setIsFormatted(false);
-      setShowPreview(false);
     }
   };
 
   const handleChange = (e) => {
     const newValue = e.target.value;
     onChange(newValue);
-    setIsFormatted(false);
-    setShowPreview(false);
     
     // Validate JSON on change
     if (newValue.trim()) {
@@ -60,30 +49,12 @@ export const JsonEditor = ({ value, onChange, placeholder = '{"key": "value"}' }
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(value || '');
+    navigator.clipboard.writeText(jsonValue || '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const isValidJSON = !error && value && value.trim();
-
-  // Sync scroll between textarea and preview
-  useEffect(() => {
-    if (showPreview && textareaRef.current && previewRef.current) {
-      const handleScroll = () => {
-        if (previewRef.current) {
-          previewRef.current.scrollTop = textareaRef.current.scrollTop;
-          previewRef.current.scrollLeft = textareaRef.current.scrollLeft;
-        }
-      };
-      textareaRef.current.addEventListener('scroll', handleScroll);
-      return () => {
-        if (textareaRef.current) {
-          textareaRef.current.removeEventListener('scroll', handleScroll);
-        }
-      };
-    }
-  }, [showPreview]);
+  const isValidJSON = !error && jsonValue && jsonValue.trim();
 
   return (
     <div className="space-y-2">
@@ -99,7 +70,7 @@ export const JsonEditor = ({ value, onChange, placeholder = '{"key": "value"}' }
             <Wand2 className="h-3 w-3 mr-1" />
             Format
           </Button>
-          {value && (
+          {jsonValue && (
             <Button
               type="button"
               variant="ghost"
@@ -129,54 +100,14 @@ export const JsonEditor = ({ value, onChange, placeholder = '{"key": "value"}' }
         )}
       </div>
       
-      <div className="relative">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={handleChange}
-          rows="12"
-          className="flex min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none relative z-10"
-          placeholder={placeholder}
-          spellCheck="false"
-          style={{
-            color: showPreview ? 'transparent' : 'inherit',
-            caretColor: showPreview ? 'inherit' : 'inherit',
-          }}
-        />
-        
-        {/* Syntax highlighted preview overlay */}
-        {showPreview && isValidJSON && (
-          <div 
-            ref={previewRef}
-            className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-md"
-            style={{
-              padding: '0.5rem',
-              fontSize: '0.875rem',
-              lineHeight: '1.25rem',
-            }}
-          >
-            <SyntaxHighlighter
-              language="json"
-              style={vscDarkPlus}
-              customStyle={{
-                margin: 0,
-                padding: 0,
-                background: 'transparent',
-                fontSize: 'inherit',
-                lineHeight: 'inherit',
-              }}
-              codeTagProps={{
-                style: {
-                  fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
-                  fontSize: 'inherit',
-                }
-              }}
-            >
-              {value}
-            </SyntaxHighlighter>
-          </div>
-        )}
-      </div>
+      <textarea
+        value={jsonValue}
+        onChange={handleChange}
+        rows="12"
+        className="flex min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none"
+        placeholder={placeholder}
+        spellCheck="false"
+      />
     </div>
   );
 };

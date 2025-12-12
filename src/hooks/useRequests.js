@@ -77,6 +77,38 @@ export const useRequests = () => {
     updateRequest(id, { name: newName });
   };
 
+  /**
+   * Imports requests from an array
+   * @param {Array} importedRequests - Array of request objects to import
+   */
+  const importRequests = (importedRequests) => {
+    if (!Array.isArray(importedRequests) || importedRequests.length === 0) {
+      throw new Error('Invalid requests data');
+    }
+
+    // Find the maximum ID from existing requests
+    const maxId = requests.reduce((max, req) => Math.max(max, req.id || 0), 0);
+    
+    // Assign new IDs to imported requests to avoid conflicts
+    const newRequests = importedRequests.map((req, index) => ({
+      ...req,
+      id: maxId + index + 1,
+      // Reset response/error state
+      response: null,
+      error: null,
+      loading: false,
+      responseTime: null,
+    }));
+
+    setRequests(prev => [...prev, ...newRequests]);
+    setNextId(prev => prev + newRequests.length);
+    
+    // Activate the first imported request
+    if (newRequests.length > 0) {
+      setActiveRequestId(newRequests[0].id);
+    }
+  };
+
   return {
     requests,
     activeRequestId,
@@ -86,6 +118,7 @@ export const useRequests = () => {
     closeRequest,
     updateRequest,
     renameRequest,
+    importRequests,
   };
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRequests } from './hooks/useRequests';
 import { useGlobalSettings } from './hooks/useGlobalSettings';
 import { RequestTab } from './components/RequestTab';
@@ -6,8 +6,9 @@ import { RequestPanel } from './components/RequestPanel';
 import { ResponsePanel } from './components/ResponsePanel';
 import { SettingsModal } from './components/SettingsModal';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, Download, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { exportToJSON, downloadJSON, readJSONFile, validateImportData } from './utils/exportImportUtils';
 
 /**
  * Main App component
@@ -22,10 +23,56 @@ function App() {
     closeRequest,
     updateRequest,
     renameRequest,
+    importRequests,
   } = useRequests();
 
   const { settings: globalSettings, updateSettings } = useGlobalSettings();
   const [showSettings, setShowSettings] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleExport = () => {
+    try {
+      const jsonData = exportToJSON(requests, globalSettings);
+      const filename = `api-tester-export-${new Date().toISOString().split('T')[0]}.json`;
+      downloadJSON(jsonData, filename);
+    } catch (error) {
+      alert(`Export failed: ${error.message}`);
+    }
+  };
+
+  const handleImport = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await readJSONFile(file);
+      const validation = validateImportData(data);
+
+      if (!validation.isValid) {
+        alert(`Import failed:\n${validation.errors.join('\n')}`);
+        return;
+      }
+
+      // Import requests
+      if (data.requests && data.requests.length > 0) {
+        importRequests(data.requests);
+      }
+
+      // Import global settings if present
+      if (data.globalSettings) {
+        updateSettings(data.globalSettings);
+      }
+
+      alert(`Successfully imported ${data.requests?.length || 0} request(s)`);
+    } catch (error) {
+      alert(`Import failed: ${error.message}`);
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -50,6 +97,33 @@ function App() {
           )}
         </div>
         <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            aria-label="Export requests"
+            title="Export all requests"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Import requests"
+            title="Import requests from JSON"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Import
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            onChange={handleImport}
+            style={{ display: 'none' }}
+          />
           <Button
             variant="outline"
             size="sm"

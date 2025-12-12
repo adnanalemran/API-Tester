@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -13,8 +13,12 @@ function createWindow() {
       enableRemoteModule: true
     },
     icon: path.join(__dirname, 'assets', 'icon.png'),
-    titleBarStyle: 'default'
+    titleBarStyle: 'default',
+    autoHideMenuBar: true
   });
+
+  // Remove the menu bar completely
+  Menu.setApplicationMenu(null);
 
   mainWindow.loadFile('dist/index.html');
 

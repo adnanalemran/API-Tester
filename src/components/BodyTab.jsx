@@ -69,7 +69,7 @@ export const BodyTab = ({ request, onUpdate }) => {
           )}
           {request.bodyType === BODY_TYPES.JSON && (
             <JsonEditor
-              value={request.bodyText}
+              value={request.bodyText || ''}
               onChange={(value) => onUpdate(request.id, { bodyText: value })}
               placeholder='{"key": "value"}'
             />
