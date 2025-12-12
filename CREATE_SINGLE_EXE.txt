@@ -1,0 +1,27 @@
+YOUR APP IS BUILT! ✅
+Location: release\API Tester-win32-x64\
+
+TO CREATE A SINGLE EXE FILE:
+============================
+
+Method 1: Using 7-Zip (Easiest - No Admin Needed)
+--------------------------------------------------
+1. Install 7-Zip (free): https://www.7-zip.org/
+2. Right-click the folder: release\API Tester-win32-x64
+3. Select "7-Zip" → "Add to archive"
+4. Settings:
+   - Archive format: 7z
+   - ✅ Check "Create SFX archive"
+   - Compression: Normal
+5. Click OK
+6. You'll get: API Tester-win32-x64.exe (single file!)
+
+Method 2: The Folder Works Too!
+--------------------------------
+The folder itself is portable! Just:
+- Copy the entire "API Tester-win32-x64" folder anywhere
+- Run "API Tester.exe" from inside it
+- Works on any Windows PC!
+
+Your app is ready to use! 🎉
+
