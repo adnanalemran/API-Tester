@@ -5,6 +5,10 @@ import { ParamsTab } from './ParamsTab';
 import { HeadersTab } from './HeadersTab';
 import { BodyTab } from './BodyTab';
 import { useRequestSender } from '../hooks/useRequestSender';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 /**
  * RequestPanel component - main request configuration panel
@@ -35,34 +39,34 @@ export const RequestPanel = ({ request, onUpdate, globalSettings = {} }) => {
   return (
     <>
       {/* Request Method and URL */}
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
+      <div className="p-4 border-b bg-muted/50">
         <div className="flex items-center space-x-2 mb-3">
-          <select
-            value={request.method}
-            onChange={(e) => handleMethodChange(e.target.value)}
-            className="input-field w-32 font-semibold"
-          >
-            {HTTP_METHODS.map(method => (
-              <option key={method} value={method}>{method}</option>
-            ))}
-          </select>
-          <input
+          <Select value={request.method} onValueChange={handleMethodChange}>
+            <SelectTrigger className="w-32 font-semibold">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {HTTP_METHODS.map(method => (
+                <SelectItem key={method} value={method}>{method}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
             type="text"
             value={request.url}
             onChange={(e) => handleUrlChange(e.target.value)}
             placeholder={getUrlPlaceholder()}
-            className="input-field flex-1"
+            className="flex-1"
           />
-          <button
+          <Button
             onClick={sendRequest}
             disabled={request.loading}
-            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {request.loading ? 'Sending...' : 'Send'}
-          </button>
+          </Button>
         </div>
         {globalSettings.baseUrl && (
-          <div className="mb-2 text-xs text-gray-500">
+          <div className="mb-2 text-xs text-muted-foreground">
             Base URL: <span className="font-mono">{globalSettings.baseUrl}</span>
           </div>
         )}
@@ -70,34 +74,37 @@ export const RequestPanel = ({ request, onUpdate, globalSettings = {} }) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 bg-white">
+      <div className="flex border-b bg-background">
         <button
           onClick={() => setActiveTab(REQUEST_TABS.PARAMS)}
-          className={`tab-btn px-6 py-3 text-sm font-medium ${
+          className={cn(
+            "px-6 py-3 text-sm font-medium transition-colors",
             activeTab === REQUEST_TABS.PARAMS
-              ? 'text-gray-700 border-b-2 border-primary-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+              ? 'text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
         >
           Params
         </button>
         <button
           onClick={() => setActiveTab(REQUEST_TABS.HEADERS)}
-          className={`tab-btn px-6 py-3 text-sm font-medium ${
+          className={cn(
+            "px-6 py-3 text-sm font-medium transition-colors",
             activeTab === REQUEST_TABS.HEADERS
-              ? 'text-gray-700 border-b-2 border-primary-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+              ? 'text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
         >
           Headers
         </button>
         <button
           onClick={() => setActiveTab(REQUEST_TABS.BODY)}
-          className={`tab-btn px-6 py-3 text-sm font-medium ${
+          className={cn(
+            "px-6 py-3 text-sm font-medium transition-colors",
             activeTab === REQUEST_TABS.BODY
-              ? 'text-gray-700 border-b-2 border-primary-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+              ? 'text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
         >
           Body
         </button>

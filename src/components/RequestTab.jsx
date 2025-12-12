@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 /**
  * RequestTab component - displays a single request tab
@@ -31,21 +35,22 @@ export const RequestTab = ({ request, isActive, onSelect, onClose, onRename }) =
 
   return (
     <div
-      className={`flex items-center space-x-2 px-4 py-2 border-b-2 cursor-pointer ${
+      className={cn(
+        "flex items-center space-x-2 px-4 py-2 border-b-2 cursor-pointer transition-colors",
         isActive
-          ? 'border-primary-600 bg-white text-gray-700'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-      }`}
+          ? 'border-primary bg-background text-foreground'
+          : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+      )}
       onClick={() => onSelect(request.id)}
     >
       {isRenaming ? (
-        <input
+        <Input
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onBlur={handleRename}
           onKeyDown={handleKeyDown}
-          className="flex-1 text-sm px-2 py-1 border border-primary-600 rounded"
+          className="flex-1 text-sm h-7"
           autoFocus
           onClick={(e) => e.stopPropagation()}
         />
@@ -60,17 +65,19 @@ export const RequestTab = ({ request, isActive, onSelect, onClose, onRename }) =
           >
             {request.name}
           </span>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5 text-muted-foreground hover:text-destructive"
             onClick={(e) => {
               e.stopPropagation();
               onClose(request.id);
             }}
-            className="text-gray-400 hover:text-red-600 text-lg leading-none"
             title="Close"
             aria-label="Close request"
           >
-            ×
-          </button>
+            <X className="h-4 w-4" />
+          </Button>
         </>
       )}
     </div>

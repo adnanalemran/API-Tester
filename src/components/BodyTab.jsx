@@ -1,5 +1,10 @@
 import React from 'react';
 import { BODY_TYPES } from '../constants';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { X } from 'lucide-react';
 
 /**
  * BodyTab component - displays request body tab
@@ -38,22 +43,26 @@ export const BodyTab = ({ request, onUpdate }) => {
     <div>
       <div className="mb-4">
         <div className="flex items-center space-x-2 mb-2">
-          <label className="text-sm font-medium text-gray-700">Body Type:</label>
-          <select
+          <Label className="text-sm font-medium">Body Type:</Label>
+          <Select
             value={request.bodyType}
-            onChange={(e) => handleBodyTypeChange(e.target.value)}
-            className="input-field w-40"
+            onValueChange={handleBodyTypeChange}
           >
-            <option value={BODY_TYPES.NONE}>None</option>
-            <option value={BODY_TYPES.JSON}>JSON</option>
-            <option value={BODY_TYPES.TEXT}>Text</option>
-            <option value={BODY_TYPES.FORM_DATA}>Form Data</option>
-            <option value={BODY_TYPES.FORM_URLENCODED}>x-www-form-urlencoded</option>
-          </select>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={BODY_TYPES.NONE}>None</SelectItem>
+              <SelectItem value={BODY_TYPES.JSON}>JSON</SelectItem>
+              <SelectItem value={BODY_TYPES.TEXT}>Text</SelectItem>
+              <SelectItem value={BODY_TYPES.FORM_DATA}>Form Data</SelectItem>
+              <SelectItem value={BODY_TYPES.FORM_URLENCODED}>x-www-form-urlencoded</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
           {request.bodyType === BODY_TYPES.NONE && (
-            <div className="text-gray-500 text-sm">
+            <div className="text-muted-foreground text-sm">
               No body for this request type
             </div>
           )}
@@ -62,45 +71,48 @@ export const BodyTab = ({ request, onUpdate }) => {
               value={request.bodyText}
               onChange={(e) => onUpdate(request.id, { bodyText: e.target.value })}
               rows="12"
-              className="input-field font-mono text-sm"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
               placeholder={request.bodyType === BODY_TYPES.JSON ? '{"key": "value"}' : "Enter text..."}
             />
           )}
           {(request.bodyType === BODY_TYPES.FORM_DATA || request.bodyType === BODY_TYPES.FORM_URLENCODED) && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700">Form Data</label>
-                <button 
-                  onClick={addFormDataRow} 
-                  className="text-sm text-primary-600 hover:text-primary-700"
+                <Label className="text-sm font-medium">Form Data</Label>
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={addFormDataRow}
                 >
                   + Add
-                </button>
+                </Button>
               </div>
               <div className="space-y-2">
                 {request.formData.map((item, index) => (
                   <div key={index} className="flex items-center space-x-2">
-                    <input
+                    <Input
                       type="text"
                       placeholder="Key"
                       value={item.key}
                       onChange={(e) => updateFormData(index, 'key', e.target.value)}
-                      className="input-field flex-1"
+                      className="flex-1"
                     />
-                    <input
+                    <Input
                       type="text"
                       placeholder="Value"
                       value={item.value}
                       onChange={(e) => updateFormData(index, 'value', e.target.value)}
-                      className="input-field flex-1"
+                      className="flex-1"
                     />
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => removeFormData(index)}
-                      className="remove-item-btn text-red-600 hover:text-red-700 px-2 font-bold text-xl"
                       aria-label="Remove form data"
+                      className="text-destructive hover:text-destructive"
                     >
-                      ×
-                    </button>
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -111,4 +123,3 @@ export const BodyTab = ({ request, onUpdate }) => {
     </div>
   );
 };
-

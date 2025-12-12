@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RESPONSE_TABS } from '../constants';
 import { formatBytes, getStatusColor, formatError, formatResponseData } from '../utils/responseUtils';
+import { cn } from '@/lib/utils';
 
 /**
  * ResponsePanel component - displays response data
@@ -15,15 +16,15 @@ export const ResponsePanel = ({ request }) => {
                    request.error?.response?.headers || null;
 
     if (!headers) {
-      return <div className="text-gray-500">No headers</div>;
+      return <div className="text-muted-foreground">No headers</div>;
     }
 
     return (
       <div className="space-y-2">
         {Object.entries(headers).map(([key, value]) => (
-          <div key={key} className="flex items-start space-x-4 py-2 border-b border-gray-200">
-            <div className="font-semibold text-gray-700 w-48">{key}</div>
-            <div className="flex-1 text-gray-600 break-words">
+          <div key={key} className="flex items-start space-x-4 py-2 border-b">
+            <div className="font-semibold w-48">{key}</div>
+            <div className="flex-1 text-muted-foreground break-words">
               {Array.isArray(value) ? value.join(', ') : value}
             </div>
           </div>
@@ -57,25 +58,27 @@ export const ResponsePanel = ({ request }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
-      <div className="flex border-b border-gray-200">
+    <div className="flex-1 flex flex-col bg-background">
+      <div className="flex border-b">
         <button
           onClick={() => setActiveResponseTab(RESPONSE_TABS.RESPONSE)}
-          className={`response-tab-btn px-6 py-3 text-sm font-medium ${
+          className={cn(
+            "px-6 py-3 text-sm font-medium transition-colors",
             activeResponseTab === RESPONSE_TABS.RESPONSE
-              ? 'text-gray-700 border-b-2 border-primary-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+              ? 'text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
         >
           Response
         </button>
         <button
           onClick={() => setActiveResponseTab(RESPONSE_TABS.HEADERS)}
-          className={`response-tab-btn px-6 py-3 text-sm font-medium ${
+          className={cn(
+            "px-6 py-3 text-sm font-medium transition-colors",
             activeResponseTab === RESPONSE_TABS.HEADERS
-              ? 'text-gray-700 border-b-2 border-primary-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+              ? 'text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
         >
           Headers
         </button>
@@ -86,28 +89,28 @@ export const ResponsePanel = ({ request }) => {
           <div>
             <div className="mb-4 flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Status:</span>
+                <span className="text-sm font-medium">Status:</span>
                 {request.response ? (
-                  <span className={`px-3 py-1 rounded text-sm font-semibold ${getStatusColor(request.response.status)}`}>
+                  <span className={cn("px-3 py-1 rounded text-sm font-semibold", getStatusColor(request.response.status))}>
                     {request.response.status}
                   </span>
                 ) : request.error ? (
-                  <span className="px-3 py-1 rounded text-sm font-semibold bg-red-100 text-red-800">
+                  <span className="px-3 py-1 rounded text-sm font-semibold bg-destructive text-destructive-foreground">
                     Error
                   </span>
                 ) : (
-                  <span className="px-3 py-1 rounded text-sm font-semibold bg-gray-200">-</span>
+                  <span className="px-3 py-1 rounded text-sm font-semibold bg-muted text-muted-foreground">-</span>
                 )}
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Time:</span>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm font-medium">Time:</span>
+                <span className="text-sm text-muted-foreground">
                   {request.responseTime ? `${request.responseTime}ms` : '-'}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Size:</span>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm font-medium">Size:</span>
+                <span className="text-sm text-muted-foreground">
                   {request.response 
                     ? formatBytes(JSON.stringify(request.response.data).length) 
                     : '-'}
