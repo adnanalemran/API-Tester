@@ -60,29 +60,34 @@ function App() {
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={addNewRequest}
-            aria-label="Add new request"
-          >
-            + New Request
-          </Button>
         </div>
       </header>
 
       {/* Request Tabs */}
       <div className="flex border-b bg-muted/50 overflow-x-auto">
-        {requests.map((request) => (
-          <RequestTab
-            key={request.id}
-            request={request}
-            isActive={request.id === activeRequestId}
-            onSelect={setActiveRequestId}
-            onClose={closeRequest}
-            onRename={renameRequest}
-          />
-        ))}
+        {/* New Request Button - Chrome style at the beginning */}
+        <button
+          onClick={addNewRequest}
+          aria-label="Add new request"
+          className="h-auto px-4 py-2 rounded-none border-b-2 border-transparent hover:bg-muted/50 hover:border-primary/50 shrink-0 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          title="New Request"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+        <div className="flex flex-1 min-w-0">
+          {requests.map((request) => (
+            <RequestTab
+              key={request.id}
+              request={request}
+              isActive={request.id === activeRequestId}
+              onSelect={setActiveRequestId}
+              onClose={closeRequest}
+              onRename={renameRequest}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Main Content */}

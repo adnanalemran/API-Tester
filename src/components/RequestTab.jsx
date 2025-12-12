@@ -36,7 +36,7 @@ export const RequestTab = ({ request, isActive, onSelect, onClose, onRename }) =
   return (
     <div
       className={cn(
-        "flex items-center space-x-2 px-4 py-2 border-b-2 cursor-pointer transition-colors",
+        "flex items-center space-x-2 px-4 py-2 border-b-2 cursor-pointer transition-colors shrink-0",
         isActive
           ? 'border-primary bg-background text-foreground'
           : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'

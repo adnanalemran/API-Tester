@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
+import { JsonEditor } from './JsonEditor';
 
 /**
  * BodyTab component - displays request body tab
@@ -66,13 +67,20 @@ export const BodyTab = ({ request, onUpdate }) => {
               No body for this request type
             </div>
           )}
-          {(request.bodyType === BODY_TYPES.JSON || request.bodyType === BODY_TYPES.TEXT) && (
+          {request.bodyType === BODY_TYPES.JSON && (
+            <JsonEditor
+              value={request.bodyText}
+              onChange={(value) => onUpdate(request.id, { bodyText: value })}
+              placeholder='{"key": "value"}'
+            />
+          )}
+          {request.bodyType === BODY_TYPES.TEXT && (
             <textarea
               value={request.bodyText}
               onChange={(e) => onUpdate(request.id, { bodyText: e.target.value })}
               rows="12"
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
-              placeholder={request.bodyType === BODY_TYPES.JSON ? '{"key": "value"}' : "Enter text..."}
+              placeholder="Enter text..."
             />
           )}
           {(request.bodyType === BODY_TYPES.FORM_DATA || request.bodyType === BODY_TYPES.FORM_URLENCODED) && (
