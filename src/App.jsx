@@ -5,6 +5,7 @@ import { RequestTab } from './components/RequestTab';
 import { RequestPanel } from './components/RequestPanel';
 import { ResponsePanel } from './components/ResponsePanel';
 import { SettingsModal } from './components/SettingsModal';
+import { CustomTitleBar } from './components/CustomTitleBar';
 import { Button } from '@/components/ui/button';
 import { Settings, Download, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -76,6 +77,8 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen">
+      {/* Custom Title Bar */}
+      <CustomTitleBar />
       {/* Header */}
       <header className="border-b bg-background px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
