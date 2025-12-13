@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ApiRequest, GlobalSettings, Environment } from './types';
+import { ApiRequest, GlobalSettings } from './types';
 import TabSystem from './components/TabSystem';
 import RequestPanel from './components/RequestPanel';
 import ResponsePanel from './components/ResponsePanel';
 import SettingsModal from './components/SettingsModal';
 import HomePanel from './components/HomePanel';
 import HistoryModal from './components/HistoryModal';
-import EnvironmentModal from './components/EnvironmentModal';
 import CodeSnippetModal from './components/CodeSnippetModal';
 import { Toast, ToastMessage } from './components/Toast';
-import { generateId, keyValueToRecord, validateImportData, processVariables, generateCodeSnippet } from './utils';
-import { Settings, Download, Upload, Loader2, Zap, Box, Clock } from 'lucide-react';
+import { generateId, validateImportData, generateCodeSnippet } from './utils';
+import { Settings, Download, Upload, Loader2, Zap, Clock } from 'lucide-react';
 
 const DEFAULT_SETTINGS: GlobalSettings = {
   baseUrl: '',
   globalAuth: { type: 'none', token: '' },
   theme: 'dark',
-  activeEnvironmentId: null,
 };
 
 const DEFAULT_REQUEST: ApiRequest = {
@@ -35,12 +33,10 @@ function App() {
   const [requests, setRequests] = useState<ApiRequest[]>([]);
   const [activeRequestId, setActiveRequestId] = useState<string>('HOME');
   const [settings, setSettings] = useState<GlobalSettings>(DEFAULT_SETTINGS);
-  const [environments, setEnvironments] = useState<Environment[]>([]);
   const [history, setHistory] = useState<ApiRequest[]>([]);
   
   // Modals
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isEnvModalOpen, setIsEnvModalOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [currentCodeSnippet, setCurrentCodeSnippet] = useState('');
@@ -60,7 +56,6 @@ function App() {
         setRequests(parsed.requests || []);
         setActiveRequestId(parsed.activeRequestId || 'HOME');
         setSettings(parsed.settings || DEFAULT_SETTINGS);
-        setEnvironments(parsed.environments || []);
         setHistory(parsed.history || []);
       } catch (e) {
         console.error("Failed to load state", e);
@@ -70,16 +65,15 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('api-master-state', JSON.stringify({ 
-      requests, activeRequestId, settings, environments, history 
+      requests, activeRequestId, settings, history 
     }));
-  }, [requests, activeRequestId, settings, environments, history]);
+  }, [requests, activeRequestId, settings, history]);
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ id: generateId(), message, type });
   };
 
   const activeRequest = requests.find(r => r.id === activeRequestId);
-  const activeEnvironment = environments.find(e => e.id === settings.activeEnvironmentId);
 
   const handleRequestChange = (updated: ApiRequest) => {
     setRequests(prev => prev.map(r => r.id === updated.id ? updated : r));
@@ -116,19 +110,14 @@ function App() {
     setRequests(prev => prev.map(r => r.id === id ? { ...r, name } : r));
   };
 
-  const processText = (text: string) => {
-    if (!activeEnvironment) return text;
-    return processVariables(text, activeEnvironment.variables);
-  };
-
   const handleSend = async () => {
     if (!activeRequest) return;
     setLoading(true);
     setError(undefined);
     
-    let rawUrl = processText(activeRequest.url);
+    let rawUrl = activeRequest.url;
     if (settings.baseUrl && !rawUrl.startsWith('http')) {
-        const base = processText(settings.baseUrl).replace(/\/$/, '');
+        const base = settings.baseUrl.replace(/\/$/, '');
         const path = rawUrl.replace(/^\//, '');
         rawUrl = `${base}/${path}`;
     }
@@ -144,35 +133,35 @@ function App() {
     }
 
     activeRequest.params.forEach(p => {
-        if (p.enabled && p.key) urlObj.searchParams.append(processText(p.key), processText(p.value));
+        if (p.enabled && p.key) urlObj.searchParams.append(p.key, p.value);
     });
 
     if (activeRequest.auth.type === 'none' && settings.globalAuth.type === 'api-key' && settings.globalAuth.addTo === 'query') {
         if (settings.globalAuth.keyName) {
-            urlObj.searchParams.append(processText(settings.globalAuth.keyName), processText(settings.globalAuth.token));
+            urlObj.searchParams.append(settings.globalAuth.keyName, settings.globalAuth.token);
         }
     }
 
     const headers: Record<string, string> = {};
     activeRequest.headers.forEach(h => {
-        if (h.enabled && h.key) headers[processText(h.key)] = processText(h.value);
+        if (h.enabled && h.key) headers[h.key] = h.value;
     });
 
     let token = '';
     let authType = 'none';
     if (activeRequest.auth.type !== 'none') {
-        token = processText(activeRequest.auth.token);
+        token = activeRequest.auth.token;
         authType = activeRequest.auth.type;
         if (authType === 'api-key' && activeRequest.auth.addTo === 'header' && activeRequest.auth.keyName) {
-             headers[processText(activeRequest.auth.keyName)] = token;
+             headers[activeRequest.auth.keyName] = token;
         } else if (authType === 'bearer') {
              headers['Authorization'] = `Bearer ${token}`;
         }
     } else if (settings.globalAuth.type !== 'none') {
-        token = processText(settings.globalAuth.token);
+        token = settings.globalAuth.token;
         authType = settings.globalAuth.type;
          if (authType === 'api-key' && settings.globalAuth.addTo === 'header' && settings.globalAuth.keyName) {
-             headers[processText(settings.globalAuth.keyName)] = token;
+             headers[settings.globalAuth.keyName] = token;
         } else if (authType === 'bearer') {
              headers['Authorization'] = `Bearer ${token}`;
         }
@@ -182,15 +171,15 @@ function App() {
     if (activeRequest.method !== 'GET' && activeRequest.method !== 'HEAD') {
       if (activeRequest.body.type === 'json') {
          headers['Content-Type'] = 'application/json';
-         body = processText(activeRequest.body.content);
+         body = activeRequest.body.content;
       } else if (activeRequest.body.type === 'text') {
          headers['Content-Type'] = 'text/plain';
-         body = processText(activeRequest.body.content);
+         body = activeRequest.body.content;
       } else if (activeRequest.body.type === 'form-data') {
          const formData = new FormData();
          if (activeRequest.body.formData) {
              activeRequest.body.formData.forEach(item => {
-                 if (item.enabled && item.key) formData.append(processText(item.key), processText(item.value));
+                 if (item.enabled && item.key) formData.append(item.key, item.value);
              });
          }
          body = formData;
@@ -199,7 +188,7 @@ function App() {
          const params = new URLSearchParams();
          if (activeRequest.body.formData) {
              activeRequest.body.formData.forEach(item => {
-                 if (item.enabled && item.key) params.append(processText(item.key), processText(item.value));
+                 if (item.enabled && item.key) params.append(item.key, item.value);
              });
          }
          headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -257,9 +246,9 @@ function App() {
 
   const handleGenerateCode = () => {
      if (!activeRequest) return;
-     let rawUrl = processText(activeRequest.url);
+     let rawUrl = activeRequest.url;
      if (settings.baseUrl && !rawUrl.startsWith('http')) {
-        const base = processText(settings.baseUrl).replace(/\/$/, '');
+        const base = settings.baseUrl.replace(/\/$/, '');
         const path = rawUrl.replace(/^\//, '');
         rawUrl = `${base}/${path}`;
      }
@@ -272,12 +261,11 @@ function App() {
   const handleExport = () => {
     try {
         const exportData = {
-          version: '1.1',
+          version: '1.2',
           exportedAt: new Date().toISOString(),
           activeRequestId,
           settings,
           requests,
-          environments,
           history
         };
         
@@ -286,7 +274,7 @@ function App() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `api-master-${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `nexus-api-${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -310,7 +298,6 @@ function App() {
         if (validateImportData(data)) {
            setRequests(data.requests || []);
            setSettings(data.settings || DEFAULT_SETTINGS);
-           setEnvironments(data.environments || []);
            setHistory(data.history || []);
            
            if (data.activeRequestId && data.requests.find((r: ApiRequest) => r.id === data.activeRequestId)) {
@@ -343,33 +330,12 @@ function App() {
                     {loading ? <Loader2 className="animate-spin text-white" size={18} /> : <Zap className="text-white fill-current" size={18} />}
                 </div>
                 <div className="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-blue-200 text-transparent bg-clip-text hidden md:block">
-                    API Master
+                    Nexus API
                 </div>
             </div>
         </div>
         
         <div className="flex items-center gap-2">
-           {/* Environment Selector */}
-           <div className="flex items-center gap-2 mr-2">
-              <select 
-                value={settings.activeEnvironmentId || ''}
-                onChange={(e) => setSettings({ ...settings, activeEnvironmentId: e.target.value || null })}
-                className="bg-gray-800 border border-gray-700 text-xs rounded px-2 py-1.5 focus:outline-none focus:border-blue-500 max-w-[150px] transition-colors"
-              >
-                  <option value="">No Environment</option>
-                  {environments.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-              </select>
-              <button 
-                  onClick={() => setIsEnvModalOpen(true)} 
-                  className="p-1.5 bg-gray-800 hover:bg-gray-700 rounded border border-gray-700 text-gray-400 transition-colors"
-                  title="Manage Environments"
-              >
-                  <Box size={14} />
-              </button>
-           </div>
-
-           <div className="h-5 w-px bg-gray-700 mx-1"></div>
-
            <div className="flex items-center gap-1 bg-gray-800/50 p-1 rounded-lg border border-gray-700">
                 <button 
                   onClick={() => setIsHistoryOpen(true)} 
@@ -395,7 +361,7 @@ function App() {
         </div>
       </div>
 
-      {/* Main Layout (No Sidebar) */}
+      {/* Main Layout */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
              {/* Tabs */}
             <TabSystem
@@ -456,15 +422,6 @@ function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onSave={setSettings}
-      />
-      
-      <EnvironmentModal
-        isOpen={isEnvModalOpen}
-        onClose={() => setIsEnvModalOpen(false)}
-        environments={environments}
-        setEnvironments={setEnvironments}
-        activeEnvId={settings.activeEnvironmentId}
-        setActiveEnvId={(id) => setSettings({ ...settings, activeEnvironmentId: id })}
       />
       
       <HistoryModal

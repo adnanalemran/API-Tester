@@ -1,4 +1,4 @@
-import { ApiRequest, KeyValueItem, Environment } from "./types";
+import { ApiRequest, KeyValueItem } from "./types";
 
 export const generateId = (): string => {
   return Math.random().toString(36).substring(2, 9);
@@ -40,18 +40,6 @@ export const validateImportData = (data: any): boolean => {
   if (!Array.isArray(data.requests)) return false;
   if (!data.settings || typeof data.settings !== 'object') return false;
   return true;
-};
-
-export const processVariables = (str: string, variables: KeyValueItem[]) => {
-  let result = str;
-  variables.forEach(v => {
-    if (v.enabled && v.key) {
-      // Replace {{key}} with value
-      const regex = new RegExp(`\\{\\{${v.key}\\}\\}`, 'g');
-      result = result.replace(regex, v.value);
-    }
-  });
-  return result;
 };
 
 export const generateCodeSnippet = (req: ApiRequest, actualUrl: string): string => {

@@ -19,7 +19,7 @@ const HomePanel: React.FC<HomePanelProps> = ({ onNewRequest, onImport, onSetting
              <Zap className="w-8 h-8 text-blue-400" />
           </div>
           <h1 className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-blue-100 to-blue-400 text-transparent bg-clip-text">
-            API Client Master
+            Nexus API
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
             A professional-grade HTTP client for testing, debugging, and documenting your APIs with speed and precision.
@@ -106,7 +106,7 @@ const HomePanel: React.FC<HomePanelProps> = ({ onNewRequest, onImport, onSetting
         </div>
         
         <div className="mt-20 pt-10 border-t border-gray-800 text-center text-gray-500 text-sm">
-          <p>API Client Master v1.0.0 &copy; {new Date().getFullYear()}</p>
+          <p>Nexus API v1.0.0 &copy; {new Date().getFullYear()}</p>
         </div>
       </div>
     </div>

@@ -11,6 +11,12 @@ export interface KeyValueItem {
   enabled: boolean;
 }
 
+export interface Environment {
+  id: string;
+  name: string;
+  variables: KeyValueItem[];
+}
+
 export interface AuthConfig {
   type: AuthType;
   token: string;
@@ -48,23 +54,15 @@ export interface ApiRequest {
   sentAt?: number;
 }
 
-export interface Environment {
-  id: string;
-  name: string;
-  variables: KeyValueItem[];
-}
-
 export interface GlobalSettings {
   baseUrl: string;
   globalAuth: AuthConfig;
   theme: 'dark' | 'light';
-  activeEnvironmentId: string | null;
 }
 
 export interface AppState {
   requests: ApiRequest[];
   activeRequestId: string | null;
   settings: GlobalSettings;
-  environments: Environment[];
   history: ApiRequest[];
 }
