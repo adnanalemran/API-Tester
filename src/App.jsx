@@ -33,7 +33,7 @@ function App() {
 
   const handleExport = () => {
     try {
-      const jsonData = exportToJSON(requests, globalSettings);
+      const jsonData = exportToJSON(requests, globalSettings, activeRequestId);
       const filename = `api-tester-export-${new Date().toISOString().split('T')[0]}.json`;
       downloadJSON(jsonData, filename);
     } catch (error) {
@@ -56,7 +56,8 @@ function App() {
 
       // Import requests
       if (data.requests && data.requests.length > 0) {
-        importRequests(data.requests);
+        // Pass the activeRequestId from export to restore the active tab
+        importRequests(data.requests, data.activeRequestId ?? null);
       }
 
       // Import global settings if present

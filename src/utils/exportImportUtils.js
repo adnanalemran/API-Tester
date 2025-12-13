@@ -3,29 +3,34 @@
  */
 
 /**
- * Exports all requests and global settings to JSON
+ * Exports all requests, global settings, and active tab to JSON
  * @param {Array} requests - Array of request objects
  * @param {Object} globalSettings - Global settings object
+ * @param {number} activeRequestId - Currently active request ID
  * @returns {string} JSON string
  */
-export const exportToJSON = (requests, globalSettings) => {
+export const exportToJSON = (requests, globalSettings, activeRequestId) => {
   const exportData = {
     version: '1.0.0',
     exportedAt: new Date().toISOString(),
+    activeRequestId: activeRequestId,
     requests: requests.map(req => ({
       id: req.id,
       name: req.name,
       method: req.method,
       url: req.url,
-      params: req.params,
-      headers: req.headers,
-      body: req.body,
-      bodyType: req.bodyType,
-      tokenType: req.tokenType,
-      token: req.token,
-      useGlobalToken: req.useGlobalToken,
+      params: req.params || [{ key: '', value: '' }],
+      headers: req.headers || [{ key: 'Content-Type', value: 'application/json' }],
+      bodyType: req.bodyType || 'none',
+      bodyText: req.bodyText || '',
+      formData: req.formData || [{ key: '', value: '' }],
+      token: req.token || '',
+      tokenType: req.tokenType || 'Bearer',
+      useToken: req.useToken || false,
+      showToken: req.showToken || false,
+      useGlobalToken: req.useGlobalToken || false,
     })),
-    globalSettings: globalSettings,
+    globalSettings: globalSettings || {},
   };
 
   return JSON.stringify(exportData, null, 2);
@@ -86,8 +91,11 @@ export const validateImportData = (data) => {
     errors.push('Missing or invalid requests array');
   } else {
     data.requests.forEach((req, index) => {
-      if (!req.method || !req.url) {
-        errors.push(`Request ${index + 1}: Missing method or URL`);
+      if (!req.method) {
+        errors.push(`Request ${index + 1}: Missing method`);
+      }
+      if (req.url === undefined || req.url === null) {
+        errors.push(`Request ${index + 1}: Missing URL`);
       }
       if (!req.name) {
         errors.push(`Request ${index + 1}: Missing name`);

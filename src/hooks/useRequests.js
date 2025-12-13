@@ -80,8 +80,10 @@ export const useRequests = () => {
   /**
    * Imports requests from an array
    * @param {Array} importedRequests - Array of request objects to import
+   * @param {number} preferredActiveId - Optional original ID of request that should be active after import
+   * @returns {Array} Array of newly imported requests with their new IDs
    */
-  const importRequests = (importedRequests) => {
+  const importRequests = (importedRequests, preferredActiveId = null) => {
     if (!Array.isArray(importedRequests) || importedRequests.length === 0) {
       throw new Error('Invalid requests data');
     }
@@ -89,24 +91,55 @@ export const useRequests = () => {
     // Find the maximum ID from existing requests
     const maxId = requests.reduce((max, req) => Math.max(max, req.id || 0), 0);
     
+    // Create a map of original IDs to new IDs
+    const idMap = new Map();
+    
     // Assign new IDs to imported requests to avoid conflicts
-    const newRequests = importedRequests.map((req, index) => ({
-      ...req,
-      id: maxId + index + 1,
-      // Reset response/error state
-      response: null,
-      error: null,
-      loading: false,
-      responseTime: null,
-    }));
+    const newRequests = importedRequests.map((req, index) => {
+      const newId = maxId + index + 1;
+      const originalId = req.id;
+      idMap.set(originalId, newId);
+      
+      return {
+        ...req,
+        id: newId,
+        // Ensure all fields are properly set with defaults
+        params: req.params || [{ key: '', value: '' }],
+        headers: req.headers || [{ key: 'Content-Type', value: 'application/json' }],
+        bodyType: req.bodyType || 'none',
+        bodyText: req.bodyText || '',
+        formData: req.formData || [{ key: '', value: '' }],
+        token: req.token || '',
+        tokenType: req.tokenType || 'Bearer',
+        useToken: req.useToken !== undefined ? req.useToken : false,
+        showToken: req.showToken !== undefined ? req.showToken : false,
+        useGlobalToken: req.useGlobalToken !== undefined ? req.useGlobalToken : false,
+        // Reset response/error state
+        response: null,
+        error: null,
+        loading: false,
+        responseTime: null,
+      };
+    });
 
     setRequests(prev => [...prev, ...newRequests]);
     setNextId(prev => prev + newRequests.length);
     
-    // Activate the first imported request
-    if (newRequests.length > 0) {
-      setActiveRequestId(newRequests[0].id);
+    // Determine which request should be active
+    let activeId = null;
+    if (preferredActiveId !== null && idMap.has(preferredActiveId)) {
+      // Use the preferred active ID if it exists in the imported requests
+      activeId = idMap.get(preferredActiveId);
+    } else if (newRequests.length > 0) {
+      // Otherwise, activate the first imported request
+      activeId = newRequests[0].id;
     }
+    
+    if (activeId !== null) {
+      setActiveRequestId(activeId);
+    }
+    
+    return newRequests;
   };
 
   return {
